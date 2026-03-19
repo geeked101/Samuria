@@ -1,4 +1,4 @@
-/* ── SAMURIA TRAVELS – SHARED JS ── */
+/* ── SAMURAI×× TRAVELS – SHARED JS ── */
 
 // ── Currency ──
 const RATES = { KES: 1, USD: 0.0077, GBP: 0.0061 };

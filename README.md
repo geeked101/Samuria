@@ -1,4 +1,4 @@
-# Samuria Travels (Static Website)
+# Samurai×× Travels (Static Website)
 
 This is a **static HTML/CSS/JS** website (no build step). Pages share a common nav, currency toggle, and reveal animations via `assets/shared.css` + `assets/shared.js`.
 
@@ -10,7 +10,7 @@ You can open the HTML files directly, but using a local server is recommended (f
 - **Option B (Python)**:
 
 ```bash
-cd samuria-travels
+cd samurai-travels
 python -m http.server 5500
 ```
 
@@ -80,7 +80,7 @@ You can replace emojis with images/SVGs later, but emojis keep the site fast and
 
 ### Branding / contact
 
-- **Logo text**: `SAMURIA` in the `<nav>` of each page.
+- **Logo text**: `SAMURAI××` in the `<nav>` of each page.
 - **Phone / email / location**: in each page footer (`<footer class="site-footer">`).
 - **WhatsApp link**: floating button near bottom right:
   - `href="https://wa.me/254700000000"` (update the number + optional prefilled message)
