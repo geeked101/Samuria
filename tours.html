@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tours & Pricing – Samuria Travels</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+.page-hero { background:var(--green-deep); padding:140px 5% 70px; position:relative; overflow:hidden; }
+.page-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 80% at 80% 50%, rgba(41,199,101,.15),transparent); }
+.page-hero-content { position:relative; z-index:1; }
+.page-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,5vw,4rem); color:var(--white); line-height:1.1; margin-bottom:14px; }
+.page-hero h1 em { color:var(--gold); font-style:italic; }
+.page-hero p { color:rgba(245,230,200,.7); font-size:1rem; max-width:550px; line-height:1.7; }
+
+/* Tabs */
+.tabs-row { background:#0a1a0e; padding:0 5%; display:flex; gap:6px; overflow-x:auto; border-bottom:2px solid rgba(41,199,101,.15); }
+.tab-btn { background:none; border:none; color:rgba(245,230,200,.5); font-family:'Outfit',sans-serif; font-size:.85rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:18px 22px; cursor:pointer; border-bottom:3px solid transparent; transition:color .25s,border-color .25s; white-space:nowrap; margin-bottom:-2px; }
+.tab-btn.active { color:var(--green-bright); border-bottom-color:var(--green-bright); }
+.tab-btn:hover { color:var(--sand); }
+
+/* Tour section */
+.tour-section { background:#0a1a0e; padding:70px 5%; display:none; }
+.tour-section.active { display:block; }
+
+.tour-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:26px; margin-top:40px; }
+.tour-card { background:rgba(255,255,255,.04); border:1px solid rgba(41,199,101,.15); border-radius:24px; overflow:hidden; transition:transform .3s,border-color .3s; cursor:pointer; }
+.tour-card:hover { transform:translateY(-10px); border-color:var(--green-bright); }
+.tour-card:focus-visible { outline:3px solid rgba(245,166,35,.7); outline-offset:3px; }
+.tour-card.expanded { border-color:rgba(245,166,35,.75); box-shadow:0 18px 42px rgba(0,0,0,.45), 0 0 0 1px rgba(245,166,35,.25); }
+.tour-card.expanded:hover { transform:translateY(-6px); }
+.tour-thumb { height:210px; display:flex; align-items:center; justify-content:center; font-size:5rem; position:relative; }
+.t-safari { background:linear-gradient(135deg,#1a3a0a,#5a8a1a,#c8a22a); }
+.t-sea    { background:linear-gradient(135deg,#0a2a4a,#0077b6,#00b4d8); }
+.t-city   { background:linear-gradient(135deg,#1a0a3a,#6a1a8a,#c94040); }
+.t-photo  { background:linear-gradient(135deg,#2a1a08,#8a5a10,#f5a623); }
+.t-transfer{ background:linear-gradient(135deg,#1a1a0a,#3a3a1a,#8a7a1a); }
+.t-custom { background:linear-gradient(135deg,#0a1a3a,#1a3a6a,#29c765); }
+.tour-badge { position:absolute; top:14px; right:14px; background:var(--gold); color:var(--dark); font-size:.7rem; font-weight:700; letter-spacing:1px; padding:4px 12px; border-radius:20px; text-transform:uppercase; }
+.tour-body { padding:24px; }
+.tour-name { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--white); margin-bottom:10px; }
+.tour-highlights { list-style:none; margin-bottom:18px; display:flex; flex-direction:column; gap:7px; }
+.tour-highlights li { color:rgba(245,230,200,.65); font-size:.84rem; display:flex; align-items:flex-start; gap:8px; line-height:1.4; }
+.tour-highlights li::before { content:'✦'; color:var(--green-bright); font-size:.65rem; margin-top:3px; flex-shrink:0; }
+.tour-meta { display:flex; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid rgba(255,255,255,.07); }
+.price-label { font-size:.72rem; color:#666; text-transform:uppercase; letter-spacing:1px; }
+.price-val { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--green-bright); letter-spacing:1px; }
+.price-per { font-size:.75rem; color:#666; }
+.btn-book-tour { background:var(--green-bright); color:var(--dark); border:none; padding:10px 22px; border-radius:30px; font-family:'Outfit',sans-serif; font-weight:700; font-size:.83rem; cursor:pointer; transition:background .2s; text-decoration:none; }
+.btn-book-tour:hover { background:var(--gold); }
+
+/* Expandable details */
+.tour-expand-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 14px; }
+.tour-expand-hint { font-size:.72rem; letter-spacing:1px; text-transform:uppercase; color:rgba(245,230,200,.45); }
+.tour-expand-btn {
+  border:1px solid rgba(245,230,200,.18);
+  background:rgba(255,255,255,.03);
+  color:rgba(245,230,200,.75);
+  padding:8px 12px;
+  border-radius:999px;
+  cursor:pointer;
+  font-family:'Outfit',sans-serif;
+  font-weight:700;
+  font-size:.78rem;
+  letter-spacing:.6px;
+  transition:background .2s, border-color .2s, transform .2s, color .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.tour-expand-btn:hover { background:rgba(255,255,255,.06); border-color:rgba(41,199,101,.35); color:var(--sand); transform:translateY(-1px); }
+.tour-expand-btn .chev { transition:transform .25s; display:inline-block; }
+.tour-card.expanded .tour-expand-btn .chev { transform:rotate(180deg); }
+
+.tour-details {
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .38s ease;
+}
+.tour-details-inner { padding:0 0 18px; }
+.tour-card.expanded .tour-details { max-height:720px; }
+
+.tour-media {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+  margin:4px 0 14px;
+}
+.tour-media-tile{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.08);
+  height:86px;
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg, rgba(41,199,101,.18), rgba(245,166,35,.12));
+  cursor:zoom-in;
+  transition:transform .2s, border-color .2s, background .2s;
+}
+.tour-media-tile:hover { transform:translateY(-2px); border-color:rgba(245,230,200,.18); background:linear-gradient(135deg, rgba(41,199,101,.25), rgba(245,166,35,.16)); }
+.tour-media-tile:focus-visible { outline:3px solid rgba(41,199,101,.55); outline-offset:3px; }
+.tour-media-tile::after{
+  content:attr(data-emo);
+  position:absolute;
+  right:10px;
+  bottom:8px;
+  font-size:1.3rem;
+  opacity:.85;
+}
+.tour-media-tile img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.tour-details-title{
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:2px;
+  color:rgba(245,230,200,.75);
+  font-size:.95rem;
+  margin:10px 0 10px;
+}
+.tour-details-note{
+  color:rgba(245,230,200,.55);
+  font-size:.85rem;
+  line-height:1.6;
+  margin:10px 0 0;
+}
+
+/* Tile lightbox */
+.tour-lightbox{
+  position:fixed;
+  inset:0;
+  z-index:3000;
+  background:rgba(0,0,0,.78);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+}
+.tour-lightbox.open{ display:flex; }
+.tour-lightbox-panel{
+  width:min(980px, 100%);
+  background:rgba(10,26,14,.96);
+  border:1px solid rgba(41,199,101,.25);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 22px 60px rgba(0,0,0,.6);
+}
+.tour-lightbox-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.tour-lightbox-title{
+  color:rgba(245,230,200,.75);
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:2px;
+  font-size:1rem;
+}
+.tour-lightbox-close{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(245,230,200,.85);
+  border-radius:999px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-family:'Outfit',sans-serif;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+.tour-lightbox-close:hover{ border-color:rgba(41,199,101,.35); background:rgba(255,255,255,.09); }
+.tour-lightbox-nav{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.tour-lightbox-arrow{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(245,230,200,.9);
+  border-radius:999px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-family:'Outfit',sans-serif;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+.tour-lightbox-arrow:hover{ border-color:rgba(245,230,200,.22); background:rgba(255,255,255,.09); }
+.tour-lightbox-arrow:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.tour-lightbox-view{
+  background:linear-gradient(135deg, rgba(41,199,101,.12), rgba(245,166,35,.10));
+  aspect-ratio:16/9;
+  width:100%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.tour-lightbox-view img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+.tour-lightbox-emoji{
+  font-size:4rem;
+  opacity:.9;
+}
+
+/* What's included */
+.included-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-top:36px; }
+.included-item { background:rgba(41,199,101,.07); border:1px solid rgba(41,199,101,.15); border-radius:14px; padding:18px; text-align:center; }
+.included-item .ico { font-size:1.6rem; margin-bottom:10px; }
+.included-item p { color:rgba(245,230,200,.7); font-size:.83rem; line-height:1.5; }
+
+/* Pricing table */
+.pricing-table { width:100%; border-collapse:collapse; margin-top:36px; }
+.pricing-table th { background:rgba(41,199,101,.12); color:var(--green-bright); font-family:'Bebas Neue',sans-serif; letter-spacing:2px; font-size:.85rem; padding:14px 18px; text-align:left; border-bottom:1px solid rgba(41,199,101,.2); }
+.pricing-table td { padding:14px 18px; color:rgba(245,230,200,.7); font-size:.88rem; border-bottom:1px solid rgba(255,255,255,.05); }
+.pricing-table tr:hover td { background:rgba(255,255,255,.03); }
+.pricing-table .price-cell { color:var(--gold); font-family:'Bebas Neue',sans-serif; font-size:1.1rem; }
+.check { color:var(--green-bright); }
+.cross { color:#e74c3c; }
+
+/* FAQ */
+#faq { background:var(--cream); padding:80px 5%; }
+#faq .section-title { color:var(--dark); }
+#faq .section-title span { color:var(--green-mid); }
+.faq-list { margin-top:36px; display:flex; flex-direction:column; gap:14px; max-width:780px; }
+.faq-item { border:1px solid rgba(0,0,0,.08); border-radius:14px; overflow:hidden; }
+.faq-q { width:100%; background:var(--white); border:none; padding:18px 22px; text-align:left; font-family:'Outfit',sans-serif; font-size:.95rem; font-weight:600; color:var(--dark); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background .2s; }
+.faq-q:hover { background:#f0f7f2; }
+.faq-q .faq-icon { color:var(--green-mid); font-size:1.2rem; transition:transform .3s; }
+.faq-q.open .faq-icon { transform:rotate(45deg); }
+.faq-a { background:var(--white); padding:0 22px; max-height:0; overflow:hidden; transition:max-height .35s ease, padding .3s; color:#555; font-size:.9rem; line-height:1.7; }
+.faq-a.open { max-height:300px; padding:0 22px 18px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SAMURIA<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="tours.html" class="active">Tours & Pricing</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="booking.html">Book Now</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="currency-toggle">
+      <button class="cur-btn active" data-cur="KES">KES</button>
+      <button class="cur-btn" data-cur="USD">USD</button>
+      <button class="cur-btn" data-cur="GBP">GBP</button>
+    </div>
+    <a href="booking.html" class="nav-cta">Book Trip</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a>
+  <a href="booking.html" class="mob-cta">Book a Trip</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-content">
+    <div class="section-label">Our Packages</div>
+    <h1>Tours & <em>Pricing</em></h1>
+    <p>Hand-crafted Kenya experiences with transparent, all-inclusive pricing. Toggle between KES, USD & GBP at the top. Every package is fully customizable.</p>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-row">
+  <button class="tab-btn active" data-tab="safari">🦁 Safari</button>
+  <button class="tab-btn" data-tab="sea">🌊 Sea Excursions</button>
+  <button class="tab-btn" data-tab="city">🏙️ City Tours</button>
+  <button class="tab-btn" data-tab="photo">📸 Photo Safaris</button>
+  <button class="tab-btn" data-tab="transfer">🚐 Transfers</button>
+  <button class="tab-btn" data-tab="custom">🗺️ Custom</button>
+</div>
+
+<!-- SAFARI -->
+<div class="tour-section active" id="tab-safari">
+  <div class="section-label">Wildlife Adventures</div>
+  <h2 class="section-title">Safari <span>Packages</span></h2>
+  <div class="tour-cards">
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-safari"><span style="font-size:5rem;">🦁</span><span class="tour-badge">Best Seller</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Maasai Mara Classic (3 Days)</div>
+        <ul class="tour-highlights">
+          <li>3 game drives including sunrise & sunset</li>
+          <li>Big Five tracking with expert guide</li>
+          <li>Authentic Maasai village cultural visit</li>
+          <li>Full board — all meals & accommodation</li>
+          <li>Park fees & 4WD safari vehicle included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price">
+            <div class="price-label">From</div>
+            <div class="price-val" data-kes="45000">KES 45,000</div>
+            <div class="price-per">per person</div>
+          </div>
+          <a href="booking.html?tour=mara-classic" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-safari"><span style="font-size:5rem;">🐘</span><span class="tour-badge">Scenic</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Amboseli & Kilimanjaro (2 Days)</div>
+        <ul class="tour-highlights">
+          <li>Elephant herds with Mt. Kilimanjaro backdrop</li>
+          <li>2 full game drives in Amboseli NP</li>
+          <li>Masai guided bush walk (optional)</li>
+          <li>Half board — breakfast & dinner</li>
+          <li>All transfers from Nairobi included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price">
+            <div class="price-label">From</div>
+            <div class="price-val" data-kes="32000">KES 32,000</div>
+            <div class="price-per">per person</div>
+          </div>
+          <a href="booking.html?tour=amboseli" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-safari"><span style="font-size:5rem;">🦒</span><span class="tour-badge">Grand</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Kenya Grand Safari (7 Days)</div>
+        <ul class="tour-highlights">
+          <li>Maasai Mara + Amboseli + Tsavo</li>
+          <li>7 nights full board luxury tented camps</li>
+          <li>Hot air balloon safari option</li>
+          <li>All park fees, transfers & flights</li>
+          <li>Private guide throughout the circuit</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price">
+            <div class="price-label">From</div>
+            <div class="price-val" data-kes="180000">KES 180,000</div>
+            <div class="price-per">per person</div>
+          </div>
+          <a href="booking.html?tour=grand-safari" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h3 style="color:var(--white);font-family:'Playfair Display',serif;margin-top:60px;margin-bottom:6px;">What's Included in All Safari Packages</h3>
+  <div class="included-grid">
+    <div class="included-item"><div class="ico">🚙</div><p>4WD Safari Vehicle with pop-up roof</p></div>
+    <div class="included-item"><div class="ico">🏕️</div><p>Accommodation (tented camp or lodge)</p></div>
+    <div class="included-item"><div class="ico">🍽️</div><p>All meals as specified per package</p></div>
+    <div class="included-item"><div class="ico">🎫</div><p>All national park entry fees</p></div>
+    <div class="included-item"><div class="ico">👨‍🦯</div><p>Personal guide (Samuria) throughout your safari</p></div>
+    <div class="included-item"><div class="ico">🔭</div><p>Binoculars & field guide books</p></div>
+    <div class="included-item"><div class="ico">💧</div><p>Mineral water throughout the tour</p></div>
+    <div class="included-item"><div class="ico">📱</div><p>WhatsApp pre-trip planning support</p></div>
+  </div>
+</div>
+
+<!-- SEA -->
+<div class="tour-section" id="tab-sea">
+  <div class="section-label">Coastal Adventures</div>
+  <h2 class="section-title">Sea <span>Excursions</span></h2>
+  <div class="tour-cards">
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-sea"><span style="font-size:5rem;">⛵</span><span class="tour-badge">Romantic</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Dhow Sunset Cruise</div>
+        <ul class="tour-highlights">
+          <li>Traditional dhow sailing at golden hour</li>
+          <li>Fresh seafood dinner on board</li>
+          <li>Live taarab music entertainment</li>
+          <li>Snorkeling at Kisite-Mpunguti Marine Park</li>
+          <li>Hotel pickup & drop-off included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="8500">KES 8,500</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=dhow" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-sea"><span style="font-size:5rem;">🤿</span><span class="tour-badge">Adventure</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Diani Beach Escape (2 Days)</div>
+        <ul class="tour-highlights">
+          <li>Snorkeling over pristine coral reefs</li>
+          <li>Water sports: jet ski, kayak, paddleboard</li>
+          <li>Dolphin watching excursion</li>
+          <li>1 night beach resort accommodation</li>
+          <li>Nairobi–Diani transfer by road or flight</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="28000">KES 28,000</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=diani" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-sea"><span style="font-size:5rem;">🎣</span><span class="tour-badge">Thrill</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Deep Sea Fishing</div>
+        <ul class="tour-highlights">
+          <li>Full-day offshore fishing charter</li>
+          <li>Target: Marlin, Sailfish, Tuna, Mahi-mahi</li>
+          <li>Professional fishing gear provided</li>
+          <li>Catch-and-release or keep your catch</li>
+          <li>Refreshments & packed lunch included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="35000">KES 35,000</div><div class="price-per">per boat (4 pax)</div></div>
+          <a href="booking.html?tour=fishing" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CITY TOURS -->
+<div class="tour-section" id="tab-city">
+  <div class="section-label">Urban Kenya</div>
+  <h2 class="section-title">City <span>Tours</span></h2>
+  <div class="tour-cards">
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-city"><span style="font-size:5rem;">🦒</span><span class="tour-badge">Day Trip</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Nairobi Highlights (Full Day)</div>
+        <ul class="tour-highlights">
+          <li>Giraffe Centre — feed and photograph giraffes</li>
+          <li>Karen Blixen Museum & coffee shop</li>
+          <li>Carnivore Restaurant lunch (game meats!)</li>
+          <li>Nairobi National Park game drive at dusk</li>
+          <li>Maasai Market artisan shopping</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="8000">KES 8,000</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=nairobi-day" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-city"><span style="font-size:5rem;">⚓</span><span class="tour-badge">Historic</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Mombasa Old Town & Coast</div>
+        <ul class="tour-highlights">
+          <li>Fort Jesus UNESCO World Heritage Site</li>
+          <li>Old Town Swahili architecture walking tour</li>
+          <li>Spice market & fresh juice stop</li>
+          <li>Bamburi Beach sunset</li>
+          <li>Swahili seafood dinner</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="6500">KES 6,500</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=mombasa" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-photo"><span style="font-size:5rem;">📸</span><span class="tour-badge">Specialty</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Nairobi Photo Walk (Half Day)</div>
+        <ul class="tour-highlights">
+          <li>Street photography in CBD & Eastleigh</li>
+          <li>Mathare Valley documentary walk</li>
+          <li>Kibera cultural community visit</li>
+          <li>Graffiti & street art tour</li>
+          <li>Sunset shots at Uhuru Gardens</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="4500">KES 4,500</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=photo-walk" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO SAFARI -->
+<div class="tour-section" id="tab-photo">
+  <div class="section-label">Capture the Wild</div>
+  <h2 class="section-title">Photo <span>Safari Packages</span></h2>
+  <p style="color:rgba(245,230,200,.65);font-size:.95rem;line-height:1.7;max-width:580px;margin-bottom:36px;">Every drive timed around golden hour. Every stop chosen for composition. Whether you shoot on a phone or a DSLR, you'll leave with shots that stop people mid-scroll.</p>
+  <div class="tour-cards">
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-photo"><span style="font-size:5rem;">🌅</span><span class="tour-badge">Golden Hour</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Mara Golden Hour Drive</div>
+        <ul class="tour-highlights">
+          <li>Sunrise & sunset game drives timed for best light</li>
+          <li>Positioned for silhouette & action shots</li>
+          <li>Guide knowledge of regular animal spots</li>
+          <li>Small group — max 4 in vehicle for comfort</li>
+          <li>Basic photography tips included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="18000">KES 18,000</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=photo-mara" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-photo"><span style="font-size:5rem;">🦒</span><span class="tour-badge">Wildlife</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Amboseli Photo Safari (2 Days)</div>
+        <ul class="tour-highlights">
+          <li>Elephants framed against Mt. Kilimanjaro</li>
+          <li>Flamingos & waterbirds at Lake Amboseli</li>
+          <li>2 full days, 4 game drives</li>
+          <li>Accommodation at photography-friendly camp</li>
+          <li>All transfers from Nairobi</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="38000">KES 38,000</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=photo-amboseli" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-photo"><span style="font-size:5rem;">🏙️</span><span class="tour-badge">Urban</span></div>
+      <div class="tour-body">
+        <div class="tour-name">Nairobi Street Photography</div>
+        <ul class="tour-highlights">
+          <li>CBD, Eastleigh & Kibera documentary walk</li>
+          <li>Street portraits, markets & architecture</li>
+          <li>Graffiti & street art hotspots</li>
+          <li>Half-day, small group (max 3)</li>
+          <li>Ethical photography guidance included</li>
+        </ul>
+        <div class="tour-meta">
+          <div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="4500">KES 4,500</div><div class="price-per">per person</div></div>
+          <a href="booking.html?tour=photo-nairobi" class="btn-book-tour">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFERS -->
+<div class="tour-section" id="tab-transfer">
+  <div class="section-label">Getting Around Kenya</div>
+  <h2 class="section-title">Airport & Hotel <span>Transfers</span></h2>
+  <p style="color:rgba(245,230,200,.65);font-size:.95rem;line-height:1.7;max-width:580px;margin-bottom:36px;">Comfortable, punctual & professional transfers across Kenya. Meet-and-greet service at all airports. Available 24/7 including public holidays.</p>
+  <table class="pricing-table">
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th>Vehicle</th>
+        <th>Price (1–3 Pax)</th>
+        <th>Price (4–7 Pax)</th>
+        <th>Incl. Meet & Greet</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>JKIA → Nairobi CBD Hotels</td><td>Saloon / SUV</td><td class="price-cell" data-kes="2500">KES 2,500</td><td class="price-cell" data-kes="3500">KES 3,500</td><td class="check">✔</td></tr>
+      <tr><td>JKIA → Westlands / Kilimani</td><td>Saloon / SUV</td><td class="price-cell" data-kes="2200">KES 2,200</td><td class="price-cell" data-kes="3200">KES 3,200</td><td class="check">✔</td></tr>
+      <tr><td>Wilson Airport → City</td><td>Saloon</td><td class="price-cell" data-kes="1800">KES 1,800</td><td class="price-cell" data-kes="2800">KES 2,800</td><td class="check">✔</td></tr>
+      <tr><td>HKIA (Mombasa) → Hotels</td><td>Saloon / Van</td><td class="price-cell" data-kes="2000">KES 2,000</td><td class="price-cell" data-kes="3000">KES 3,000</td><td class="check">✔</td></tr>
+      <tr><td>Nairobi → Maasai Mara</td><td>4WD Safari</td><td class="price-cell" data-kes="12000">KES 12,000</td><td class="price-cell" data-kes="14000">KES 14,000</td><td class="check">✔</td></tr>
+      <tr><td>Nairobi → Amboseli</td><td>4WD Safari</td><td class="price-cell" data-kes="10000">KES 10,000</td><td class="price-cell" data-kes="12000">KES 12,000</td><td class="check">✔</td></tr>
+      <tr><td>Nairobi → Diani Beach</td><td>Van / SUV</td><td class="price-cell" data-kes="16000">KES 16,000</td><td class="price-cell" data-kes="20000">KES 20,000</td><td class="check">✔</td></tr>
+      <tr><td>Custom / Long Distance</td><td>Negotiable</td><td colspan="2" style="color:var(--gold);">Contact for quote</td><td class="check">✔</td></tr>
+    </tbody>
+  </table>
+  <p style="color:rgba(245,230,200,.4);font-size:.8rem;margin-top:16px;">* Prices above are one-way per vehicle. Return journeys get 10% discount. Night surcharge (10PM–6AM): +20%.</p>
+</div>
+
+<!-- CUSTOM -->
+<div class="tour-section" id="tab-custom">
+  <div class="section-label">Tailor-Made</div>
+  <h2 class="section-title">Custom <span>Itineraries</span></h2>
+  <p style="color:rgba(245,230,200,.65);font-size:.95rem;line-height:1.7;max-width:600px;margin-bottom:50px;">Can't find exactly what you're looking for? No problem. Every trip I design is 100% custom. Tell me your dream and I'll make it real.</p>
+  <div class="tour-cards">
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-custom"><span style="font-size:5rem;">💍</span><span class="tour-badge">Romance</span></div>
+      <div class="tour-body"><div class="tour-name">Honeymoon Package</div><ul class="tour-highlights"><li>Private dhow sundowner cruise</li><li>Luxury tented camp in Maasai Mara</li><li>Couples massage & champagne</li><li>Helicopter transfer option</li></ul><div class="tour-meta"><div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="150000">KES 150,000</div><div class="price-per">per couple</div></div><a href="booking.html?tour=honeymoon" class="btn-book-tour">Enquire</a></div></div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-custom"><span style="font-size:5rem;">👨‍👩‍👧‍👦</span><span class="tour-badge">Family</span></div>
+      <div class="tour-body"><div class="tour-name">Family Kenya Adventure</div><ul class="tour-highlights"><li>Child-safe vehicle & guide</li><li>Giraffe Centre, David Sheldrick Elephant Orphanage</li><li>Mara game drives paced for kids</li><li>Family-friendly camps & lodges</li></ul><div class="tour-meta"><div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="60000">KES 60,000</div><div class="price-per">per family</div></div><a href="booking.html?tour=family" class="btn-book-tour">Enquire</a></div></div>
+    </div>
+    <div class="tour-card reveal">
+      <div class="tour-thumb t-custom"><span style="font-size:5rem;">🏢</span><span class="tour-badge">Corporate</span></div>
+      <div class="tour-body"><div class="tour-name">Corporate Team Retreat</div><ul class="tour-highlights"><li>Team-building safari activities</li><li>Conference facilities in bush setting</li><li>Group transfers & logistics</li><li>Fully managed end-to-end experience</li></ul><div class="tour-meta"><div class="tour-price"><div class="price-label">From</div><div class="price-val" data-kes="400000">KES 400,000</div><div class="price-per">per group</div></div><a href="booking.html?tour=corporate" class="btn-book-tour">Enquire</a></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-label">Common Questions</div>
+  <h2 class="section-title dark">Frequently <span>Asked Questions</span></h2>
+  <div class="faq-list">
+    <div class="faq-item"><button class="faq-q">What's the best time to visit Maasai Mara? <span class="faq-icon">+</span></button><div class="faq-a">The Great Wildebeest Migration peaks July–October, making this the most dramatic time. However, game viewing is excellent year-round. January–March is also great — fewer crowds and lower prices.</div></div>
+    <div class="faq-item"><button class="faq-q">Do you require a deposit to book? <span class="faq-icon">+</span></button><div class="faq-a">Yes, a 30% deposit confirms your booking. The balance is payable 7 days before your tour. We accept M-Pesa, bank transfer, Visa/Mastercard and cash on arrival for transfers.</div></div>
+    <div class="faq-item"><button class="faq-q">What is your cancellation policy? <span class="faq-icon">+</span></button><div class="faq-a">Cancellations 14+ days before tour: full refund minus 10% admin fee. 7–13 days: 50% refund. Less than 7 days: no refund but we can reschedule for free once within 12 months.</div></div>
+    <div class="faq-item"><button class="faq-q">Do Kenyan nationals get local pricing? <span class="faq-icon">+</span></button><div class="faq-a">Yes! Kenya residents receive preferential national park rates which are significantly lower than international rates. Just let me know when booking — savings of up to 60% apply.</div></div>
+    <div class="faq-item"><button class="faq-q">Is travel insurance required? <span class="faq-icon">+</span></button><div class="faq-a">It is strongly recommended for international travellers. We are fully insured as a business. For international clients, we recommend a policy covering medical evacuation, trip cancellation and emergency healthcare.</div></div>
+    <div class="faq-item"><button class="faq-q">Can you accommodate solo travellers? <span class="faq-icon">+</span></button><div class="faq-a">Absolutely! Solo travellers are very welcome. We can arrange a private solo tour or connect you with a small group to share costs — your choice. Solo adventurers often get the most personal, immersive experience.</div></div>
+    <div class="faq-item"><button class="faq-q">What languages do you guide in? <span class="faq-icon">+</span></button><div class="faq-a">English and Swahili. I can also arrange certified guides for French, German, Spanish and Italian-speaking groups at a small additional cost.</div></div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand"><a href="index.html" class="nav-logo">SAMURIA<span>.</span></a><p>Professional Safari Guide & Travel Planner. Nairobi, Kenya.</p><div class="social-row"><a href="#" class="soc-btn">f</a><a href="#" class="soc-btn">📸</a><a href="#" class="soc-btn">▶</a></div></div>
+    <div class="footer-col"><h4>Explore</h4><a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a></div>
+    <div class="footer-col"><h4>Services</h4><a href="tours.html">Safari Packages</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
+    <div class="footer-col"><h4>Contact</h4><p>📞 +254 700 000 000</p><p>✉️ hello@samuriatravels.co.ke</p><p>📍 Nairobi, Kenya</p></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 Samuria Travels · Your Gateway to Kenya 🇰🇪</p><p>New & Growing · Built on Passion</p></div>
+</footer>
+
+<a href="https://wa.me/254700000000" class="wa-float" target="_blank" rel="noopener">💬</a>
+<script src="assets/shared.js"></script>
+<script>
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tour-section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    setCurrency(currentCurrency);
+  });
+});
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const a = q.nextElementSibling;
+    const isOpen = a.classList.contains('open');
+    document.querySelectorAll('.faq-a').forEach(x => x.classList.remove('open'));
+    document.querySelectorAll('.faq-q').forEach(x => x.classList.remove('open'));
+    if (!isOpen) { a.classList.add('open'); q.classList.add('open'); }
+  });
+});
+// Activate tab from URL hash (e.g. tours.html#safari)
+function activateTabFromHash() {
+  const hash = window.location.hash.replace('#','');
+  const map = { safari:'safari', sea:'sea', city:'city', transfer:'transfer', custom:'custom', photo:'photo' };
+  const tab = map[hash];
+  if (tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tour-section').forEach(s => s.classList.remove('active'));
+    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    if (btn) btn.classList.add('active');
+    const section = document.getElementById('tab-' + tab);
+    if (section) section.classList.add('active');
+    setCurrency(currentCurrency);
+    setTimeout(() => section && section.scrollIntoView({behavior:'smooth', block:'start'}), 200);
+  }
+}
+activateTabFromHash();
+window.addEventListener('hashchange', activateTabFromHash);
+
+// Price cells in table
+const origSetCurrency = setCurrency;
+window.setCurrency = function(cur) {
+  origSetCurrency(cur);
+  document.querySelectorAll('.price-cell[data-kes]').forEach(el => {
+    const kes = parseInt(el.dataset.kes);
+    const converted = Math.round(kes * RATES[cur]);
+    const formatted = cur === 'KES' ? `KES ${converted.toLocaleString()}` : `${SYMBOLS[cur]}${converted.toLocaleString()}`;
+    el.textContent = formatted;
+  });
+};
+
+// Expandable tour cards
+function initTourCardExpand() {
+  const cards = Array.from(document.querySelectorAll('.tour-card'));
+  if (!cards.length) return;
+
+  // Lightbox (for tour media tiles)
+  let lightbox = document.querySelector('.tour-lightbox');
+  if (!lightbox) {
+    lightbox = document.createElement('div');
+    lightbox.className = 'tour-lightbox';
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    lightbox.setAttribute('aria-label', 'Tour image preview');
+    lightbox.innerHTML = `
+      <div class="tour-lightbox-panel">
+        <div class="tour-lightbox-top">
+          <div class="tour-lightbox-title">Preview</div>
+          <div class="tour-lightbox-nav">
+            <button type="button" class="tour-lightbox-arrow" data-dir="-1" aria-label="Previous image">‹</button>
+            <button type="button" class="tour-lightbox-arrow" data-dir="1" aria-label="Next image">›</button>
+            <button type="button" class="tour-lightbox-close" aria-label="Close preview">Close ✕</button>
+          </div>
+        </div>
+        <div class="tour-lightbox-view"></div>
+      </div>
+    `;
+    document.body.appendChild(lightbox);
+  }
+
+  const lightboxView = lightbox.querySelector('.tour-lightbox-view');
+  const titleEl = lightbox.querySelector('.tour-lightbox-title');
+  const prevBtn = lightbox.querySelector('.tour-lightbox-arrow[data-dir="-1"]');
+  const nextBtn = lightbox.querySelector('.tour-lightbox-arrow[data-dir="1"]');
+
+  let activeTiles = [];
+  let activeIndex = 0;
+
+  const closeLightbox = () => {
+    lightbox.classList.remove('open');
+    lightboxView.innerHTML = '';
+    if (titleEl) titleEl.textContent = 'Preview';
+    activeTiles = [];
+    activeIndex = 0;
+    document.body.style.overflow = '';
+  };
+
+  const renderLightboxAtIndex = (index) => {
+    if (!activeTiles.length) return;
+    activeIndex = Math.max(0, Math.min(index, activeTiles.length - 1));
+    const tile = activeTiles[activeIndex];
+
+    // Prefer <img> inside tile, then data-src, else emoji placeholder
+    const imgEl = tile.querySelector('img');
+    const src = imgEl?.getAttribute('src') || tile.dataset.src;
+    const alt = imgEl?.getAttribute('alt') || tile.dataset.alt || 'Tour image';
+    const emo = tile.dataset.emo || '📷';
+
+    lightboxView.innerHTML = '';
+    if (src) {
+      const big = document.createElement('img');
+      big.src = src;
+      big.alt = alt;
+      lightboxView.appendChild(big);
+    } else {
+      const e = document.createElement('div');
+      e.className = 'tour-lightbox-emoji';
+      e.textContent = emo;
+      lightboxView.appendChild(e);
+    }
+
+    if (titleEl) titleEl.textContent = `Image ${activeIndex + 1} / ${activeTiles.length}`;
+    if (prevBtn) prevBtn.disabled = activeIndex === 0;
+    if (nextBtn) nextBtn.disabled = activeIndex === activeTiles.length - 1;
+  };
+
+  const openLightboxForTile = (tile) => {
+    const container = tile.closest('.tour-media');
+    activeTiles = container ? Array.from(container.querySelectorAll('.tour-media-tile')) : [tile];
+    activeIndex = Math.max(0, activeTiles.indexOf(tile));
+    renderLightboxAtIndex(activeIndex);
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Lightbox interactions
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  lightbox.querySelector('.tour-lightbox-close')?.addEventListener('click', closeLightbox);
+  prevBtn?.addEventListener('click', () => renderLightboxAtIndex(activeIndex - 1));
+  nextBtn?.addEventListener('click', () => renderLightboxAtIndex(activeIndex + 1));
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') renderLightboxAtIndex(activeIndex - 1);
+    if (e.key === 'ArrowRight') renderLightboxAtIndex(activeIndex + 1);
+  });
+
+  const MEDIA_EMOJI = ['📍', '🦓', '🌅'];
+  const QUICK_COUNT = 3;
+
+  const shouldIgnoreClick = (target) => {
+    return !!target.closest('a, button, input, textarea, select, label');
+  };
+
+  const collapseAllExcept = (keepCard) => {
+    cards.forEach(c => {
+      if (c !== keepCard) {
+        c.classList.remove('expanded');
+        c.setAttribute('aria-expanded', 'false');
+        const btn = c.querySelector('.tour-expand-btn');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  };
+
+  const toggleCard = (card) => {
+    const willExpand = !card.classList.contains('expanded');
+    if (willExpand) collapseAllExcept(card);
+    card.classList.toggle('expanded', willExpand);
+    card.setAttribute('aria-expanded', willExpand ? 'true' : 'false');
+    const btn = card.querySelector('.tour-expand-btn');
+    if (btn) btn.setAttribute('aria-expanded', willExpand ? 'true' : 'false');
+  };
+
+  cards.forEach((card, idx) => {
+    // Make focusable for keyboard
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-expanded', 'false');
+    card.style.webkitTapHighlightColor = 'transparent';
+
+    const body = card.querySelector('.tour-body');
+    const ul = card.querySelector('.tour-highlights');
+    const meta = card.querySelector('.tour-meta');
+    if (!body || !ul || !meta) return;
+
+    // Create expand row (button + hint)
+    const expandRow = document.createElement('div');
+    expandRow.className = 'tour-expand-row';
+    expandRow.innerHTML = `
+      <div class="tour-expand-hint">Click card for details</div>
+      <button type="button" class="tour-expand-btn" aria-expanded="false">
+        More info <span class="chev">▾</span>
+      </button>
+    `;
+
+    // Create details wrapper
+    const details = document.createElement('div');
+    details.className = 'tour-details';
+    details.innerHTML = `
+      <div class="tour-details-inner">
+        <div class="tour-media">
+          <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 0) % MEDIA_EMOJI.length]}"></div>
+          <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 1) % MEDIA_EMOJI.length]}"></div>
+          <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 2) % MEDIA_EMOJI.length]}"></div>
+        </div>
+        <div class="tour-details-title">Tour highlights</div>
+        <ul class="tour-highlights tour-highlights-more"></ul>
+        <p class="tour-details-note">Tip: replace these tiles with real photos anytime (swap each tile for an <code>&lt;img&gt;</code>).</p>
+      </div>
+    `;
+
+    // Split highlights: keep first QUICK_COUNT in the main list
+    const lis = Array.from(ul.querySelectorAll('li'));
+    const moreLis = lis.slice(QUICK_COUNT);
+    moreLis.forEach(li => li.remove());
+    const moreUl = details.querySelector('.tour-highlights-more');
+    moreLis.forEach(li => moreUl.appendChild(li));
+
+    // Insert UI between highlights and meta
+    body.insertBefore(expandRow, meta);
+    body.insertBefore(details, meta);
+
+    // Media tile -> lightbox (and do NOT toggle the card)
+    details.querySelectorAll('.tour-media-tile').forEach(tile => {
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openLightboxForTile(tile);
+      });
+      tile.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          openLightboxForTile(tile);
+        }
+      });
+    });
+
+    // Button click should not trigger "Book Now" etc
+    expandRow.querySelector('.tour-expand-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleCard(card);
+    });
+
+    // Card click (ignore interactive elements)
+    card.addEventListener('click', (e) => {
+      if (shouldIgnoreClick(e.target)) return;
+      toggleCard(card);
+    });
+
+    // Keyboard toggle
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (shouldIgnoreClick(e.target)) return;
+        e.preventDefault();
+        toggleCard(card);
+      }
+    });
+  });
+}
+
+initTourCardExpand();
+</script>
+</body>
+</html>

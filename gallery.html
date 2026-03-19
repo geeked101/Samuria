@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery – Samuria Travels</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+.page-hero { background:var(--dark); padding:140px 5% 60px; position:relative; overflow:hidden; }
+.page-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 80% 50%, rgba(245,166,35,.12),transparent); }
+.page-hero-content { position:relative; z-index:1; }
+.page-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,5vw,4rem); color:var(--white); line-height:1.1; margin-bottom:14px; }
+.page-hero h1 em { color:var(--gold); font-style:italic; }
+.page-hero p { color:rgba(245,230,200,.6); font-size:1rem; max-width:550px; line-height:1.7; }
+
+/* Filter bar */
+.filter-bar { background:#0a1a0e; padding:22px 5%; display:flex; gap:10px; flex-wrap:wrap; border-bottom:1px solid rgba(41,199,101,.12); }
+.filter-btn { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:rgba(245,230,200,.6); font-family:'Outfit',sans-serif; font-size:.8rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:8px 18px; border-radius:30px; cursor:pointer; transition:background .2s,border-color .2s,color .2s; }
+.filter-btn.active, .filter-btn:hover { background:var(--green-bright); border-color:var(--green-bright); color:var(--dark); }
+
+/* Gallery grid */
+.gallery-section { background:#0a1a0e; padding:50px 5% 80px; }
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+.gallery-grid .wide { grid-column:span 2; }
+.gallery-grid .tall { grid-row:span 2; }
+
+.g-item {
+  border-radius:16px; overflow:hidden; position:relative;
+  cursor:pointer; aspect-ratio:1; background:#0d2218;
+  transition:transform .3s;
+}
+.g-item.wide { aspect-ratio:2/1; }
+.g-item.tall { aspect-ratio:1/2; }
+.g-item:hover { transform:scale(1.02); }
+.g-canvas { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4.5rem; position:relative; overflow:hidden; }
+.g-item .g-overlay {
+  position:absolute; inset:0; background:rgba(0,0,0,0);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:background .3s; gap:6px;
+}
+.g-item:hover .g-overlay { background:rgba(0,0,0,.55); }
+.g-overlay .g-title { color:var(--white); font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; opacity:0; transform:translateY(10px); transition:opacity .3s,transform .3s; text-align:center; padding:0 12px; }
+.g-overlay .g-tag { background:var(--gold); color:var(--dark); font-size:.7rem; font-weight:700; letter-spacing:1px; padding:3px 10px; border-radius:20px; text-transform:uppercase; opacity:0; transform:translateY(10px); transition:opacity .3s .05s,transform .3s .05s; }
+.g-item:hover .g-title, .g-item:hover .g-tag { opacity:1; transform:translateY(0); }
+
+/* Gradient backgrounds for gallery items */
+.bg-savannah { background:linear-gradient(135deg,#1a3a0a 0%,#4a7a1a 40%,#c8a22a 80%,#e8621a 100%); }
+.bg-ocean    { background:linear-gradient(135deg,#0a2a4a 0%,#0077b6 50%,#00b4d8 100%); }
+.bg-sunset   { background:linear-gradient(135deg,#0a1a0e 0%,#8a1a10 40%,#f5a623 80%,#ffe066 100%); }
+.bg-jungle   { background:linear-gradient(135deg,#0a2a0a 0%,#1a5c14 60%,#29c765 100%); }
+.bg-city     { background:linear-gradient(135deg,#1a0a3a 0%,#6a1a8a 50%,#ff4466 100%); }
+.bg-beach    { background:linear-gradient(135deg,#f5e6c8 0%,#00b4d8 50%,#0077b6 100%); }
+.bg-mtn      { background:linear-gradient(135deg,#0a1a2a 0%,#2a4a6a 50%,#c8e0f0 90%,#ffffff 100%); }
+.bg-cultural { background:linear-gradient(135deg,#3a1a0a 0%,#8a3a10 50%,#f5a623 100%); }
+.bg-wildlife { background:linear-gradient(135deg,#1a2a0a 0%,#3a5a1a 40%,#8a6a1a 80%,#c8a22a 100%); }
+.bg-night    { background:linear-gradient(135deg,#050a0e 0%,#0a1a2a 50%,#1a3a5a 100%); }
+.bg-flower   { background:linear-gradient(135deg,#3a0a2a 0%,#8a1a5a 50%,#f56a90 100%); }
+.bg-river    { background:linear-gradient(135deg,#0a2a1a 0%,#1a5a3a 50%,#29c765 80%,#00b4d8 100%); }
+
+/* Hidden class for filtering */
+.g-item.hidden { display:none; }
+
+/* Lightbox */
+.lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+.lightbox.open { display:flex; }
+.lb-inner { position:relative; max-width:800px; width:100%; border-radius:20px; overflow:hidden; background:#0d2218; }
+.lb-visual { width:100%; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; font-size:7rem; }
+.lb-info { padding:24px 28px; }
+.lb-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--white); margin-bottom:8px; }
+.lb-desc { color:rgba(245,230,200,.65); font-size:.9rem; line-height:1.6; }
+.lb-tag { display:inline-block; background:var(--gold); color:var(--dark); font-size:.72rem; font-weight:700; letter-spacing:1px; padding:4px 12px; border-radius:20px; text-transform:uppercase; margin-top:12px; }
+.lb-close { position:absolute; top:14px; right:16px; background:rgba(255,255,255,.12); border:none; color:var(--white); font-size:1.4rem; width:38px; height:38px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s; z-index:2; }
+.lb-close:hover { background:rgba(255,255,255,.25); }
+.lb-nav { display:flex; gap:12px; margin-top:16px; }
+.lb-btn { background:var(--green-bright); color:var(--dark); border:none; padding:10px 22px; border-radius:30px; font-family:'Outfit',sans-serif; font-weight:700; font-size:.85rem; cursor:pointer; transition:background .2s; }
+.lb-btn:hover { background:var(--gold); }
+.lb-counter { color:rgba(245,230,200,.45); font-size:.82rem; margin-left:auto; display:flex; align-items:center; }
+
+/* Count badge */
+.gallery-count { color:rgba(245,230,200,.45); font-size:.85rem; margin-bottom:24px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SAMURIA<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="tours.html">Tours & Pricing</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="booking.html">Book Now</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="currency-toggle">
+      <button class="cur-btn active" data-cur="KES">KES</button>
+      <button class="cur-btn" data-cur="USD">USD</button>
+      <button class="cur-btn" data-cur="GBP">GBP</button>
+    </div>
+    <a href="booking.html" class="nav-cta">Book Trip</a>
+  </div>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a>
+  <a href="booking.html" class="mob-cta">Book a Trip</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-content">
+    <div class="section-label">Portfolio</div>
+    <h1>Moments from<br><em>Wild Kenya</em></h1>
+    <p>Real trips, real memories. Browse highlights from past adventures — safaris, coastlines, city explorations, and happy clients.</p>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">🌍 All</button>
+  <button class="filter-btn" data-filter="safari">🦁 Safari</button>
+  <button class="filter-btn" data-filter="coast">🌊 Coast & Sea</button>
+  <button class="filter-btn" data-filter="city">🏙️ City</button>
+  <button class="filter-btn" data-filter="wildlife">🐘 Wildlife</button>
+  <button class="filter-btn" data-filter="clients">😊 Happy Clients</button>
+  <button class="filter-btn" data-filter="landscape">🌅 Landscapes</button>
+</div>
+
+<div class="gallery-section">
+  <div class="gallery-count" id="galleryCount">Showing 20 photos</div>
+  <div class="gallery-grid" id="galleryGrid">
+
+    <!-- Row 1 -->
+    <div class="g-item wide" data-cat="safari" data-idx="0" data-title="Dawn at Maasai Mara" data-desc="Lions watching the sunrise over the Mara plains. Captured at 5:45AM on a cold July morning." data-tag="Safari">
+      <div class="g-canvas bg-savannah"><span>🦁</span><div class="g-overlay"><div class="g-title">Dawn at Maasai Mara</div><div class="g-tag">Safari</div></div></div>
+    </div>
+    <div class="g-item tall" data-cat="wildlife" data-idx="1" data-title="Giraffe at Golden Hour" data-desc="A lone giraffe silhouetted against the amber Amboseli sky with Kilimanjaro in the background." data-tag="Wildlife">
+      <div class="g-canvas bg-sunset"><span>🦒</span><div class="g-overlay"><div class="g-title">Giraffe at Golden Hour</div><div class="g-tag">Wildlife</div></div></div>
+    </div>
+    <div class="g-item" data-cat="coast" data-idx="2" data-title="Dhow Sunset Cruise" data-desc="Traditional dhow sailing off Diani as the sun melts into the Indian Ocean." data-tag="Coast">
+      <div class="g-canvas bg-ocean"><span>⛵</span><div class="g-overlay"><div class="g-title">Dhow Sunset Cruise</div><div class="g-tag">Coast</div></div></div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="g-item" data-cat="wildlife" data-idx="3" data-title="Elephant Family Crossing" data-desc="A herd of 14 elephants crossing the Mara River. A scene we watched for 45 magical minutes." data-tag="Wildlife">
+      <div class="g-canvas bg-wildlife"><span>🐘</span><div class="g-overlay"><div class="g-title">Elephant Family Crossing</div><div class="g-tag">Wildlife</div></div></div>
+    </div>
+    <div class="g-item" data-cat="coast" data-idx="4" data-title="Snorkeling at Watamu" data-desc="Crystal clear waters and vibrant coral reefs at Watamu Marine National Reserve." data-tag="Coast">
+      <div class="g-canvas bg-ocean"><span>🤿</span><div class="g-overlay"><div class="g-title">Snorkeling at Watamu</div><div class="g-tag">Coast</div></div></div>
+    </div>
+    <div class="g-item" data-cat="clients" data-idx="5" data-title="James & Sophie — Mara 2024" data-desc="The Millers from London on their honeymoon safari. They spotted all Big Five in one day!" data-tag="Happy Clients">
+      <div class="g-canvas bg-cultural"><span>😄</span><div class="g-overlay"><div class="g-title">James & Sophie — Mara 2024</div><div class="g-tag">Happy Clients</div></div></div>
+    </div>
+    <div class="g-item wide" data-cat="landscape" data-idx="6" data-title="Great Rift Valley Vista" data-desc="Panoramic view from the escarpment overlooking Lake Nakuru and the floor of the Great Rift Valley." data-tag="Landscape">
+      <div class="g-canvas bg-mtn"><span>🌋</span><div class="g-overlay"><div class="g-title">Great Rift Valley Vista</div><div class="g-tag">Landscape</div></div></div>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="g-item tall" data-cat="safari" data-idx="7" data-title="Cheetah on the Hunt" data-desc="A cheetah scanning the horizon from an old termite mound — seconds before a full sprint." data-tag="Safari">
+      <div class="g-canvas bg-savannah"><span>🐆</span><div class="g-overlay"><div class="g-title">Cheetah on the Hunt</div><div class="g-tag">Safari</div></div></div>
+    </div>
+    <div class="g-item" data-cat="city" data-idx="8" data-title="Nairobi City Lights" data-desc="The Nairobi skyline from Ngong Hills at dusk — Africa's greenest capital glittering below." data-tag="City">
+      <div class="g-canvas bg-city"><span>🏙️</span><div class="g-overlay"><div class="g-title">Nairobi City Lights</div><div class="g-tag">City</div></div></div>
+    </div>
+    <div class="g-item" data-cat="coast" data-idx="9" data-title="Diani White Sands" data-desc="The powder-white beaches of Diani — consistently rated among Africa's best beaches." data-tag="Coast">
+      <div class="g-canvas bg-beach"><span>🏖️</span><div class="g-overlay"><div class="g-title">Diani White Sands</div><div class="g-tag">Coast</div></div></div>
+    </div>
+
+    <!-- Row 4 -->
+    <div class="g-item" data-cat="clients" data-idx="10" data-title="Aisha's Group Tour" data-desc="Aisha and her friends from Houston — 8 days across Nairobi, Mara and Diani. All smiles!" data-tag="Happy Clients">
+      <div class="g-canvas bg-cultural"><span>🎉</span><div class="g-overlay"><div class="g-title">Aisha's Group Tour</div><div class="g-tag">Happy Clients</div></div></div>
+    </div>
+    <div class="g-item wide" data-cat="wildlife" data-idx="11" data-title="Flamingos at Lake Nakuru" data-desc="Over a million lesser flamingos turning the entire lake pink — one of nature's greatest spectacles." data-tag="Wildlife">
+      <div class="g-canvas bg-flower"><span>🦩</span><div class="g-overlay"><div class="g-title">Flamingos at Lake Nakuru</div><div class="g-tag">Wildlife</div></div></div>
+    </div>
+
+    <!-- Row 5 -->
+    <div class="g-item" data-cat="landscape" data-idx="12" data-title="Mt. Kenya at Sunrise" data-desc="The twin peaks of Mt. Kenya emerging from clouds at first light — Africa's second highest mountain." data-tag="Landscape">
+      <div class="g-canvas bg-mtn"><span>🏔️</span><div class="g-overlay"><div class="g-title">Mt. Kenya at Sunrise</div><div class="g-tag">Landscape</div></div></div>
+    </div>
+    <div class="g-item" data-cat="safari" data-idx="13" data-title="Buffalo Standoff" data-desc="A bull buffalo blocks the road and eyes the vehicle. We waited 20 minutes — totally worth it." data-tag="Safari">
+      <div class="g-canvas bg-wildlife"><span>🦬</span><div class="g-overlay"><div class="g-title">Buffalo Standoff</div><div class="g-tag">Safari</div></div></div>
+    </div>
+    <div class="g-item" data-cat="city" data-idx="14" data-title="Mombasa Old Town" data-desc="The narrow coral-stone streets of Mombasa's Old Town — 500 years of Swahili culture and trade." data-tag="City">
+      <div class="g-canvas bg-cultural"><span>⚓</span><div class="g-overlay"><div class="g-title">Mombasa Old Town</div><div class="g-tag">City</div></div></div>
+    </div>
+    <div class="g-item" data-cat="landscape" data-idx="15" data-title="Mara River at Dusk" data-desc="The Mara River turns copper at sunset. Hippos surfacing, crocodiles lurking — pure wilderness." data-tag="Landscape">
+      <div class="g-canvas bg-river"><span>🌅</span><div class="g-overlay"><div class="g-title">Mara River at Dusk</div><div class="g-tag">Landscape</div></div></div>
+    </div>
+
+    <!-- Row 6 -->
+    <div class="g-item wide" data-cat="clients" data-idx="16" data-title="Laurent's Family of 8" data-desc="The Fournier family from Paris — their first Africa trip together. Dad said it was the best week of his life." data-tag="Happy Clients">
+      <div class="g-canvas bg-jungle"><span>👨‍👩‍👧‍👦</span><div class="g-overlay"><div class="g-title">Laurent's Family of 8</div><div class="g-tag">Happy Clients</div></div></div>
+    </div>
+    <div class="g-item" data-cat="wildlife" data-idx="17" data-title="Rhino at Ol Pejeta" data-desc="One of Kenya's last northern white rhinos at Ol Pejeta Conservancy — a critically endangered species." data-tag="Wildlife">
+      <div class="g-canvas bg-savannah"><span>🦏</span><div class="g-overlay"><div class="g-title">Rhino at Ol Pejeta</div><div class="g-tag">Wildlife</div></div></div>
+    </div>
+    <div class="g-item" data-cat="coast" data-idx="18" data-title="Deep Sea Catch" data-desc="A marlin caught on a full-day offshore charter near Malindi. Released safely after the photo." data-tag="Coast">
+      <div class="g-canvas bg-ocean"><span>🎣</span><div class="g-overlay"><div class="g-title">Deep Sea Catch</div><div class="g-tag">Coast</div></div></div>
+    </div>
+    <div class="g-item" data-cat="landscape" data-idx="19" data-title="Acacia Under Milky Way" data-desc="Long-exposure shot of a solitary acacia tree under the Milky Way in Amboseli. No light pollution for miles." data-tag="Landscape">
+      <div class="g-canvas bg-night"><span>🌌</span><div class="g-overlay"><div class="g-title">Acacia Under Milky Way</div><div class="g-tag">Landscape</div></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-inner">
+    <button class="lb-close" id="lbClose">✕</button>
+    <div class="lb-visual" id="lbVisual"></div>
+    <div class="lb-info">
+      <div class="lb-title" id="lbTitle"></div>
+      <div class="lb-desc" id="lbDesc"></div>
+      <div class="lb-tag" id="lbTag"></div>
+      <div class="lb-nav">
+        <button class="lb-btn" id="lbPrev">← Prev</button>
+        <button class="lb-btn" id="lbNext">Next →</button>
+        <div class="lb-counter" id="lbCounter"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand"><a href="index.html" class="nav-logo">SAMURIA<span>.</span></a><p>Professional Safari Guide & Travel Planner. Nairobi, Kenya.</p><div class="social-row"><a href="#" class="soc-btn">f</a><a href="#" class="soc-btn">📸</a><a href="#" class="soc-btn">▶</a></div></div>
+    <div class="footer-col"><h4>Explore</h4><a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a></div>
+    <div class="footer-col"><h4>Services</h4><a href="tours.html">Safaris</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
+    <div class="footer-col"><h4>Contact</h4><p>📞 +254 700 000 000</p><p>✉️ hello@samuriatravels.co.ke</p><p>📍 Nairobi, Kenya</p></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 Samuria Travels 🇰🇪</p></div>
+</footer>
+
+<a href="https://wa.me/254700000000" class="wa-float" target="_blank">💬</a>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="assets/shared.js"></script>
+<script>
+const items = Array.from(document.querySelectorAll('.g-item'));
+let visibleItems = [...items];
+let currentLbIdx = 0;
+
+// Filter
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    visibleItems = [];
+    items.forEach(item => {
+      const show = f === 'all' || item.dataset.cat === f;
+      item.classList.toggle('hidden', !show);
+      if (show) visibleItems.push(item);
+    });
+    document.getElementById('galleryCount').textContent = `Showing ${visibleItems.length} photo${visibleItems.length !== 1 ? 's' : ''}`;
+  });
+});
+
+// Open lightbox
+items.forEach((item, i) => {
+  item.addEventListener('click', () => openLb(i));
+});
+
+function openLb(idx) {
+  currentLbIdx = idx;
+  const item = items[idx];
+  const emojis = item.querySelector('.g-canvas').firstChild;
+  const bgClass = Array.from(item.querySelector('.g-canvas').classList).find(c => c.startsWith('bg-'));
+  document.getElementById('lbVisual').className = `lb-visual ${bgClass || ''}`;
+  document.getElementById('lbVisual').innerHTML = `<span style="font-size:6rem;">${item.querySelector('.g-canvas span').textContent}</span>`;
+  document.getElementById('lbTitle').textContent = item.dataset.title;
+  document.getElementById('lbDesc').textContent = item.dataset.desc;
+  document.getElementById('lbTag').textContent = item.dataset.tag;
+  document.getElementById('lbCounter').textContent = `${idx + 1} / ${items.length}`;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLb() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lbClose').addEventListener('click', closeLb);
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target === e.currentTarget) closeLb(); });
+document.getElementById('lbPrev').addEventListener('click', () => openLb((currentLbIdx - 1 + items.length) % items.length));
+document.getElementById('lbNext').addEventListener('click', () => openLb((currentLbIdx + 1) % items.length));
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Trip – Samuria Travels</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+.page-hero { background:var(--green-deep); padding:140px 5% 60px; position:relative; overflow:hidden; }
+.page-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 80% at 80% 50%, rgba(41,199,101,.15),transparent); }
+.page-hero-content { position:relative; z-index:1; }
+.page-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,5vw,4rem); color:var(--white); line-height:1.1; margin-bottom:14px; }
+.page-hero h1 em { color:var(--gold); font-style:italic; }
+.page-hero p { color:rgba(245,230,200,.7); font-size:1rem; max-width:550px; line-height:1.7; }
+
+/* Main layout */
+.booking-layout { background:#0a1a0e; padding:70px 5%; display:grid; grid-template-columns:1fr 420px; gap:50px; align-items:start; }
+@media(max-width:960px){ .booking-layout { grid-template-columns:1fr; } }
+
+/* Steps indicator */
+.steps-row { display:flex; align-items:center; gap:0; margin-bottom:40px; }
+.step { display:flex; align-items:center; gap:10px; }
+.step-num { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.1); color:rgba(245,230,200,.5); font-weight:700; font-size:.85rem; display:flex; align-items:center; justify-content:center; transition:background .3s,color .3s; }
+.step.active .step-num { background:var(--green-bright); color:var(--dark); }
+.step.done .step-num { background:var(--gold); color:var(--dark); }
+.step-label { font-size:.78rem; letter-spacing:1px; text-transform:uppercase; color:rgba(245,230,200,.4); transition:color .3s; }
+.step.active .step-label { color:var(--green-bright); }
+.step.done .step-label { color:var(--gold); }
+.step-line { flex:1; height:2px; background:rgba(255,255,255,.08); margin:0 10px; min-width:30px; }
+.step-line.done { background:var(--gold); }
+
+/* Form panels */
+.form-panel { display:none; }
+.form-panel.active { display:block; animation:fadeUp .4s ease both; }
+
+/* Form fields */
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.field-row.single { grid-template-columns:1fr; }
+@media(max-width:600px){ .field-row { grid-template-columns:1fr; } }
+.field label { display:block; font-size:.78rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--green-bright); margin-bottom:8px; }
+.field input, .field select, .field textarea {
+  width:100%; background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(41,199,101,.2); border-radius:12px;
+  padding:13px 16px; color:var(--white);
+  font-family:'Outfit',sans-serif; font-size:.92rem;
+  outline:none; transition:border-color .25s,background .2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color:var(--green-bright); background:rgba(255,255,255,.09); }
+.field input::placeholder { color:rgba(245,230,200,.3); }
+.field select option { background:#0d3020; color:var(--white); }
+.field textarea { resize:vertical; min-height:110px; }
+.field-hint { font-size:.75rem; color:rgba(245,230,200,.35); margin-top:5px; }
+
+/* Tour selector cards */
+.tour-picker { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+.tp-card { background:rgba(255,255,255,.05); border:2px solid rgba(41,199,101,.15); border-radius:14px; padding:16px 14px; cursor:pointer; text-align:center; transition:border-color .2s,background .2s; }
+.tp-card:hover { border-color:rgba(41,199,101,.5); background:rgba(41,199,101,.08); }
+.tp-card.selected { border-color:var(--green-bright); background:rgba(41,199,101,.12); }
+.tp-card .tp-ico { font-size:1.8rem; margin-bottom:8px; }
+.tp-card .tp-name { font-size:.8rem; font-weight:600; color:var(--white); line-height:1.3; }
+
+/* Navigation buttons */
+.form-nav { display:flex; gap:12px; margin-top:28px; }
+.btn-next { background:var(--green-bright); color:var(--dark); border:none; padding:14px 34px; border-radius:40px; font-family:'Outfit',sans-serif; font-weight:700; font-size:.95rem; cursor:pointer; transition:background .2s; }
+.btn-next:hover { background:var(--gold); }
+.btn-back { background:rgba(255,255,255,.08); color:var(--sand); border:1px solid rgba(255,255,255,.15); padding:12px 28px; border-radius:40px; font-family:'Outfit',sans-serif; font-weight:600; font-size:.92rem; cursor:pointer; transition:background .2s; }
+.btn-back:hover { background:rgba(255,255,255,.14); }
+.btn-submit { background:var(--gold); color:var(--dark); border:none; padding:16px 40px; border-radius:40px; font-family:'Outfit',sans-serif; font-weight:700; font-size:1rem; cursor:pointer; letter-spacing:1px; text-transform:uppercase; transition:background .2s,transform .2s; }
+.btn-submit:hover { background:var(--amber); transform:translateY(-3px); }
+.btn-submit:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+/* Summary panel */
+.summary-card { background:rgba(255,255,255,.05); border:1px solid rgba(41,199,101,.2); border-radius:20px; padding:28px; position:sticky; top:90px; }
+.summary-card h3 { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--white); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.07); }
+.summary-row { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+.summary-row .label { font-size:.8rem; color:rgba(245,230,200,.45); letter-spacing:1px; text-transform:uppercase; }
+.summary-row .value { font-size:.9rem; color:var(--white); font-weight:600; text-align:right; max-width:60%; }
+.summary-row .value.empty { color:rgba(245,230,200,.25); font-weight:400; font-style:italic; }
+.price-estimate { background:rgba(41,199,101,.1); border:1px solid rgba(41,199,101,.2); border-radius:14px; padding:16px; margin-top:20px; text-align:center; }
+.price-estimate .est-label { font-size:.75rem; color:rgba(245,230,200,.5); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+.price-estimate .est-price { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--gold); }
+.price-estimate .est-note { font-size:.75rem; color:rgba(245,230,200,.4); margin-top:4px; }
+
+/* Contact methods */
+.contact-methods { display:flex; flex-direction:column; gap:14px; margin-top:24px; }
+.contact-method { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px; cursor:pointer; text-decoration:none; transition:border-color .2s,background .2s; }
+.contact-method:hover { border-color:var(--green-bright); background:rgba(41,199,101,.08); }
+.cm-ico { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.cm-text strong { display:block; color:var(--white); font-size:.9rem; margin-bottom:2px; }
+.cm-text span { color:rgba(245,230,200,.5); font-size:.82rem; }
+
+/* Success state */
+.success-state { display:none; text-align:center; padding:40px 20px; }
+.success-state.show { display:block; animation:fadeUp .5s ease both; }
+.success-icon { font-size:5rem; margin-bottom:20px; }
+.success-state h2 { font-family:'Playfair Display',serif; font-size:2rem; color:var(--green-bright); margin-bottom:12px; }
+.success-state p { color:rgba(245,230,200,.7); font-size:.95rem; line-height:1.7; max-width:480px; margin:0 auto 28px; }
+
+/* Validation */
+.field input.error, .field select.error { border-color:#e74c3c; }
+.field-error { font-size:.75rem; color:#e74c3c; margin-top:5px; display:none; }
+.field-error.show { display:block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SAMURIA<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="tours.html">Tours & Pricing</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="booking.html" class="active">Book Now</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="currency-toggle">
+      <button class="cur-btn active" data-cur="KES">KES</button>
+      <button class="cur-btn" data-cur="USD">USD</button>
+      <button class="cur-btn" data-cur="GBP">GBP</button>
+    </div>
+    <a href="booking.html" class="nav-cta">Book Trip</a>
+  </div>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a>
+  <a href="booking.html" class="mob-cta">Book a Trip</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-content">
+    <div class="section-label">Reservations</div>
+    <h1>Book Your<br><em>Kenya Adventure</em></h1>
+    <p>Fill in the form below and Samuria will respond within 2 hours with a personalized itinerary and quote. No obligation.</p>
+  </div>
+</div>
+
+<div class="booking-layout">
+  <!-- FORM -->
+  <div>
+    <!-- Steps -->
+    <div class="steps-row">
+      <div class="step active" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-label">Your Trip</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-label">Your Details</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-label">Confirm</div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: Trip Info -->
+    <div class="form-panel active" id="panel1">
+      <div class="section-label" style="margin-bottom:8px;">Step 1 of 3</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--white);font-size:1.6rem;margin-bottom:24px;">What kind of trip?</h2>
+
+      <div class="section-label" style="margin-bottom:12px;">Select Tour Type</div>
+      <div class="tour-picker" id="tourPicker">
+        <div class="tp-card" data-tour="Safari" data-price="45000"><div class="tp-ico">🦁</div><div class="tp-name">Safari Package</div></div>
+        <div class="tp-card" data-tour="Sea Excursion" data-price="8500"><div class="tp-ico">🌊</div><div class="tp-name">Sea Excursion</div></div>
+        <div class="tp-card" data-tour="City Tour" data-price="8000"><div class="tp-ico">🏙️</div><div class="tp-name">City Tour</div></div>
+        <div class="tp-card" data-tour="Airport Transfer" data-price="2500"><div class="tp-ico">🚐</div><div class="tp-name">Transfer</div></div>
+        <div class="tp-card" data-tour="Photo Safari" data-price="12000"><div class="tp-ico">📸</div><div class="tp-name">Photo Safari</div></div>
+        <div class="tp-card" data-tour="Custom Itinerary" data-price="0"><div class="tp-ico">🗺️</div><div class="tp-name">Custom Trip</div></div>
+      </div>
+      <div class="field-error show" id="tourError" style="display:none">Please select a tour type to continue.</div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Travel Date</label>
+          <input type="date" id="travelDate">
+          <div class="field-hint">Flexible? No problem — mention it in notes.</div>
+        </div>
+        <div class="field">
+          <label>Return Date (optional)</label>
+          <input type="date" id="returnDate">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Group Size</label>
+          <select id="groupSize">
+            <option value="">Select group size</option>
+            <option value="1">Solo (1 person)</option>
+            <option value="2">Couple (2 people)</option>
+            <option value="3-4">Small Group (3–4)</option>
+            <option value="5-10">Medium Group (5–10)</option>
+            <option value="10+">Large Group (10+)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Budget Range</label>
+          <select id="budget">
+            <option value="">Select approximate budget</option>
+            <option value="under-20k">Under KES 20,000</option>
+            <option value="20k-50k">KES 20,000 – 50,000</option>
+            <option value="50k-150k">KES 50,000 – 150,000</option>
+            <option value="150k+">KES 150,000+</option>
+            <option value="flexible">Flexible / Open</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row single">
+        <div class="field">
+          <label>Special Interests or Requests</label>
+          <textarea id="interests" placeholder="Photography focus, dietary requirements, accessibility needs, honeymoon, family with young children, specific animals to see..."></textarea>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-next" id="nextToStep2">Continue →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 2: Personal Details -->
+    <div class="form-panel" id="panel2">
+      <div class="section-label" style="margin-bottom:8px;">Step 2 of 3</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--white);font-size:1.6rem;margin-bottom:24px;">Your Details</h2>
+      <div class="field-row">
+        <div class="field">
+          <label>Full Name *</label>
+          <input type="text" id="fullName" placeholder="Your full name">
+          <div class="field-error" id="nameError">Please enter your full name.</div>
+        </div>
+        <div class="field">
+          <label>Nationality</label>
+          <select id="nationality">
+            <option value="">Select country</option>
+            <option value="Kenya">Kenya 🇰🇪</option>
+            <option value="United Kingdom">United Kingdom 🇬🇧</option>
+            <option value="United States">United States 🇺🇸</option>
+            <option value="Germany">Germany 🇩🇪</option>
+            <option value="France">France 🇫🇷</option>
+            <option value="Japan">Japan 🇯🇵</option>
+            <option value="Australia">Australia 🇦🇺</option>
+            <option value="Canada">Canada 🇨🇦</option>
+            <option value="South Africa">South Africa 🇿🇦</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Email Address *</label>
+          <input type="email" id="emailAddr" placeholder="your@email.com">
+          <div class="field-error" id="emailError">Please enter a valid email.</div>
+        </div>
+        <div class="field">
+          <label>Phone / WhatsApp *</label>
+          <input type="tel" id="phoneNum" placeholder="+254 7XX XXX XXX">
+          <div class="field-error" id="phoneError">Please enter your phone number.</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Preferred Contact Method</label>
+          <select id="contactPref">
+            <option value="whatsapp">WhatsApp (fastest)</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone Call</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>How did you hear about us?</label>
+          <select id="heardFrom">
+            <option value="">Select</option>
+            <option value="google">Google Search</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="friend">Friend / Referral</option>
+            <option value="tripadvisor">TripAdvisor</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="backToStep1">← Back</button>
+        <button class="btn-next" id="nextToStep3">Continue →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 3: Confirm -->
+    <div class="form-panel" id="panel3">
+      <div class="section-label" style="margin-bottom:8px;">Step 3 of 3</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--white);font-size:1.6rem;margin-bottom:8px;">Confirm & Send</h2>
+      <p style="color:rgba(245,230,200,.6);font-size:.9rem;margin-bottom:28px;">Review your enquiry below then hit send. Samuria responds within 2 hours on business days.</p>
+
+      <div id="confirmSummary" style="background:rgba(255,255,255,.04);border:1px solid rgba(41,199,101,.15);border-radius:16px;padding:24px;margin-bottom:24px;"></div>
+
+      <div class="section-label" style="margin-bottom:12px;">How would you like to send?</div>
+      <div class="contact-methods">
+        <a href="#" class="contact-method" id="sendWhatsApp">
+          <div class="cm-ico" style="background:rgba(37,211,102,.15);">💬</div>
+          <div class="cm-text"><strong>Send via WhatsApp</strong><span>Opens WhatsApp with your details pre-filled — fastest response</span></div>
+        </a>
+        <a href="#" class="contact-method" id="sendEmail">
+          <div class="cm-ico" style="background:rgba(0,180,216,.15);">✉️</div>
+          <div class="cm-text"><strong>Send via Email Form</strong><span>Submits to Samuria's inbox — response within 2 hours</span></div>
+        </a>
+      </div>
+
+      <div class="form-nav" style="margin-top:28px;">
+        <button class="btn-back" id="backToStep2">← Back</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-state" id="successState">
+      <div class="success-icon">🎉</div>
+      <h2>Request Sent!</h2>
+      <p>Thank you! Samuria has received your booking enquiry and will be in touch within 2 hours via your preferred contact method.</p>
+      <p style="font-size:.85rem;color:rgba(245,230,200,.4);">In the meantime, feel free to explore the gallery or check out our tour packages.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
+        <a href="gallery.html" class="btn-primary">View Gallery</a>
+        <a href="tours.html" class="btn-outline">See All Tours</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR SUMMARY -->
+  <div class="summary-card" id="summaryCard">
+    <h3>Your Enquiry Summary</h3>
+    <div class="summary-row"><span class="label">Tour Type</span><span class="value empty" id="sumTour">Not selected</span></div>
+    <div class="summary-row"><span class="label">Travel Date</span><span class="value empty" id="sumDate">Not set</span></div>
+    <div class="summary-row"><span class="label">Group Size</span><span class="value empty" id="sumGroup">Not set</span></div>
+    <div class="summary-row"><span class="label">Name</span><span class="value empty" id="sumName">Not entered</span></div>
+    <div class="summary-row"><span class="label">Contact</span><span class="value empty" id="sumContact">Not entered</span></div>
+    <div class="price-estimate">
+      <div class="est-label">Estimated Starting Price</div>
+      <div class="est-price" id="estPrice">—</div>
+      <div class="est-note">Exact quote after Samuria reviews your request</div>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:.78rem;color:rgba(245,230,200,.35);line-height:1.6;">
+        📞 Call/WhatsApp: <strong style="color:rgba(245,230,200,.6);">+254 700 000 000</strong><br>
+        ✉️ <strong style="color:rgba(245,230,200,.6);">hello@samuriatravels.co.ke</strong><br>
+        ⏱️ Response within 2 hours
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand"><a href="index.html" class="nav-logo">SAMURIA<span>.</span></a><p>Professional Safari Guide & Travel Planner. Nairobi, Kenya.</p><div class="social-row"><a href="#" class="soc-btn">f</a><a href="#" class="soc-btn">📸</a><a href="#" class="soc-btn">▶</a></div></div>
+    <div class="footer-col"><h4>Explore</h4><a href="index.html">Home</a><a href="tours.html">Tours & Pricing</a><a href="gallery.html">Gallery</a><a href="booking.html">Book Now</a></div>
+    <div class="footer-col"><h4>Services</h4><a href="tours.html">Safaris</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
+    <div class="footer-col"><h4>Contact</h4><p>📞 +254 700 000 000</p><p>✉️ hello@samuriatravels.co.ke</p><p>📍 Nairobi, Kenya</p></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 Samuria Travels 🇰🇪</p></div>
+</footer>
+
+<a href="https://wa.me/254700000000" class="wa-float" target="_blank">💬</a>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="assets/shared.js"></script>
+<script>
+// ── State ──
+let bookingData = { tour:'', price:0, date:'', returnDate:'', group:'', budget:'', interests:'', name:'', email:'', phone:'', nationality:'', contactPref:'whatsapp', heardFrom:'' };
+let currentStep = 1;
+
+// ── Tour picker ──
+document.querySelectorAll('.tp-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.tp-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    bookingData.tour = card.dataset.tour;
+    bookingData.price = parseInt(card.dataset.price) || 0;
+    document.getElementById('tourError').style.display = 'none';
+    updateSummary();
+    updateEstimate();
+  });
+});
+
+// ── Live field updates ──
+['travelDate','returnDate','groupSize','budget','interests','fullName','emailAddr','phoneNum','nationality','contactPref','heardFrom'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => { updateBookingData(); updateSummary(); });
+  el.addEventListener('change', () => { updateBookingData(); updateSummary(); });
+});
+
+function updateBookingData() {
+  bookingData.date    = document.getElementById('travelDate').value;
+  bookingData.returnDate = document.getElementById('returnDate').value;
+  bookingData.group   = document.getElementById('groupSize').value;
+  bookingData.budget  = document.getElementById('budget').value;
+  bookingData.interests = document.getElementById('interests').value;
+  bookingData.name    = document.getElementById('fullName').value;
+  bookingData.email   = document.getElementById('emailAddr').value;
+  bookingData.phone   = document.getElementById('phoneNum').value;
+  bookingData.nationality = document.getElementById('nationality').value;
+  bookingData.contactPref = document.getElementById('contactPref').value;
+  bookingData.heardFrom = document.getElementById('heardFrom').value;
+}
+
+function updateSummary() {
+  const empty = (t) => `<span class="value empty">${t}</span>`;
+  const val = (t) => `<span class="value">${t}</span>`;
+  document.getElementById('sumTour').outerHTML; // refresh
+  document.getElementById('sumTour').textContent = bookingData.tour || '';
+  document.getElementById('sumTour').className = bookingData.tour ? 'value' : 'value empty';
+  if (!bookingData.tour) document.getElementById('sumTour').textContent = 'Not selected';
+
+  document.getElementById('sumDate').textContent = bookingData.date ? new Date(bookingData.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Not set';
+  document.getElementById('sumDate').className = bookingData.date ? 'value' : 'value empty';
+
+  document.getElementById('sumGroup').textContent = bookingData.group || 'Not set';
+  document.getElementById('sumGroup').className = bookingData.group ? 'value' : 'value empty';
+
+  document.getElementById('sumName').textContent = bookingData.name || 'Not entered';
+  document.getElementById('sumName').className = bookingData.name ? 'value' : 'value empty';
+
+  const contact = bookingData.phone || bookingData.email || '';
+  document.getElementById('sumContact').textContent = contact || 'Not entered';
+  document.getElementById('sumContact').className = contact ? 'value' : 'value empty';
+}
+
+function updateEstimate() {
+  const el = document.getElementById('estPrice');
+  if (!bookingData.price) { el.textContent = '—'; return; }
+  const cur = currentCurrency || 'KES';
+  const converted = Math.round(bookingData.price * RATES[cur]);
+  el.textContent = cur === 'KES' ? `KES ${converted.toLocaleString()}` : `${SYMBOLS[cur]}${converted.toLocaleString()}`;
+}
+
+// ── Step navigation ──
+function goToStep(n) {
+  currentStep = n;
+  ['panel1','panel2','panel3'].forEach((p,i) => {
+    document.getElementById(p).classList.toggle('active', i+1 === n);
+  });
+  [1,2,3].forEach(i => {
+    const s = document.getElementById('step'+i);
+    s.classList.toggle('active', i === n);
+    s.classList.toggle('done', i < n);
+    if (i > n) { s.classList.remove('active'); s.classList.remove('done'); }
+  });
+  [1,2].forEach(i => {
+    document.getElementById('line'+i).classList.toggle('done', i < n);
+  });
+  if (n === 3) buildConfirmSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('nextToStep2').addEventListener('click', () => {
+  if (!bookingData.tour) { document.getElementById('tourError').style.display = 'block'; return; }
+  updateBookingData();
+  goToStep(2);
+});
+document.getElementById('backToStep1').addEventListener('click', () => goToStep(1));
+document.getElementById('nextToStep3').addEventListener('click', () => {
+  updateBookingData();
+  let valid = true;
+  if (!bookingData.name) { document.getElementById('nameError').classList.add('show'); document.getElementById('fullName').classList.add('error'); valid = false; } else { document.getElementById('nameError').classList.remove('show'); document.getElementById('fullName').classList.remove('error'); }
+  if (!bookingData.email || !bookingData.email.includes('@')) { document.getElementById('emailError').classList.add('show'); document.getElementById('emailAddr').classList.add('error'); valid = false; } else { document.getElementById('emailError').classList.remove('show'); document.getElementById('emailAddr').classList.remove('error'); }
+  if (!bookingData.phone) { document.getElementById('phoneError').classList.add('show'); document.getElementById('phoneNum').classList.add('error'); valid = false; } else { document.getElementById('phoneError').classList.remove('show'); document.getElementById('phoneNum').classList.remove('error'); }
+  if (valid) goToStep(3);
+});
+document.getElementById('backToStep2').addEventListener('click', () => goToStep(2));
+
+function buildConfirmSummary() {
+  const d = bookingData;
+  const dateStr = d.date ? new Date(d.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'Flexible / TBC';
+  document.getElementById('confirmSummary').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Tour</div><div style="color:var(--white);font-weight:600;">${d.tour || '—'}</div></div>
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Travel Date</div><div style="color:var(--white);font-weight:600;">${dateStr}</div></div>
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Group Size</div><div style="color:var(--white);font-weight:600;">${d.group || '—'}</div></div>
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Budget</div><div style="color:var(--white);font-weight:600;">${d.budget || '—'}</div></div>
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Name</div><div style="color:var(--white);font-weight:600;">${d.name}</div></div>
+      <div><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Contact</div><div style="color:var(--white);font-weight:600;">${d.phone}</div></div>
+    </div>
+    ${d.interests ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);"><div style="font-size:.72rem;color:rgba(245,230,200,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Notes</div><div style="color:rgba(245,230,200,.75);font-size:.88rem;line-height:1.5;">${d.interests}</div></div>` : ''}
+  `;
+}
+
+// ── WhatsApp send ──
+document.getElementById('sendWhatsApp').addEventListener('click', e => {
+  e.preventDefault();
+  const d = bookingData;
+  const msg = `Hello Samuria Travels! 👋\n\nI'd like to book a trip:\n\n*Tour:* ${d.tour}\n*Date:* ${d.date || 'Flexible'}\n*Group Size:* ${d.group || 'TBC'}\n*Budget:* ${d.budget || 'TBC'}\n*Name:* ${d.name}\n*Email:* ${d.email}\n*Nationality:* ${d.nationality || 'N/A'}\n\n*Notes:* ${d.interests || 'None'}\n\nPlease send me a quote. Thank you!`;
+  const url = `https://wa.me/254700000000?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  showSuccess();
+});
+
+// ── Email (Formspree) send ──
+document.getElementById('sendEmail').addEventListener('click', async e => {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  btn.querySelector('strong').textContent = 'Sending...';
+  try {
+    // Replace YOUR_FORMSPREE_ID with your actual Formspree endpoint
+    const res = await fetch('https://formspree.io/f/YOUR_FORMSPREE_ID', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        name: bookingData.name, email: bookingData.email, phone: bookingData.phone,
+        tour: bookingData.tour, date: bookingData.date, group: bookingData.group,
+        budget: bookingData.budget, interests: bookingData.interests,
+        nationality: bookingData.nationality, contactPref: bookingData.contactPref
+      })
+    });
+    if (res.ok) {
+      showSuccess();
+    } else {
+      // Fallback: open mailto
+      const subject = encodeURIComponent(`Booking Enquiry – ${bookingData.tour} – ${bookingData.name}`);
+      const body = encodeURIComponent(`Name: ${bookingData.name}\nEmail: ${bookingData.email}\nPhone: ${bookingData.phone}\nTour: ${bookingData.tour}\nDate: ${bookingData.date}\nGroup: ${bookingData.group}\nBudget: ${bookingData.budget}\nNotes: ${bookingData.interests}`);
+      window.location.href = `mailto:hello@samuriatravels.co.ke?subject=${subject}&body=${body}`;
+      showSuccess();
+    }
+  } catch {
+    // Mailto fallback
+    const subject = encodeURIComponent(`Booking Enquiry – ${bookingData.tour}`);
+    const body = encodeURIComponent(`Name: ${bookingData.name}\nPhone: ${bookingData.phone}\nTour: ${bookingData.tour}\nDate: ${bookingData.date}`);
+    window.location.href = `mailto:hello@samuriatravels.co.ke?subject=${subject}&body=${body}`;
+    showSuccess();
+  }
+});
+
+function showSuccess() {
+  document.getElementById('panel3').classList.remove('active');
+  document.getElementById('successState').classList.add('show');
+  document.getElementById('summaryCard').style.opacity = '0';
+  document.getElementById('summaryCard').style.pointerEvents = 'none';
+  document.querySelectorAll('.steps-row .step').forEach(s => { s.classList.add('done'); s.classList.remove('active'); });
+}
+
+// Prefill from URL params
+const params = new URLSearchParams(window.location.search);
+const preselect = params.get('tour');
+if (preselect) {
+  document.querySelectorAll('.tp-card').forEach(c => {
+ 
