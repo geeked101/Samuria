@@ -228,10 +228,10 @@
     <div class="footer-col"><h4>Services</h4><a href="tours.html">Safaris</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
     <div class="footer-col"><h4>Contact</h4><p>📞 0702063163</p><p>✉️ kjeff8244@gmail.com</p><p>📍 Nairobi, Kenya</p></div>
   </div>
-  <div class="footer-bottom"><p>© 2025 Samuria Travels 🇰🇪</p><p>Built by Pluto</p></div>
+  <div class="footer-bottom"><p>© 2026 Samuria Travels 🇰🇪</p><p>Built by Pluto</p></div>
 </footer>
 
-<a href="https://wa.me/254700000000" class="wa-float" target="_blank">💬</a>
+<a href="https://wa.me/254702063163" class="wa-float" target="_blank">💬</a>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="assets/shared.js"></script>
 <script>
 const items = Array.from(document.querySelectorAll('.g-item'));
@@ -279,4 +279,11 @@ document.getElementById('lightbox').addEventListener('click', e => { if (e.targe
 document.getElementById('lbPrev').addEventListener('click', () => openLb((currentLbIdx - 1 + items.length) % items.length));
 document.getElementById('lbNext').addEventListener('click', () => openLb((currentLbIdx + 1) % items.length));
 document.addEventListener('keydown', e => {
-  if (!document.getElementById('lightbox').classList.contains('open')
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowLeft') openLb((currentLbIdx - 1 + items.length) % items.length);
+  if (e.key === 'ArrowRight') openLb((currentLbIdx + 1) % items.length);
+});
+</script>
+</body>
+</html>

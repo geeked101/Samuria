@@ -354,10 +354,10 @@
     <div class="footer-col"><h4>Services</h4><a href="tours.html">Safaris</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
     <div class="footer-col"><h4>Contact</h4><p>📞 0702063163</p><p>✉️ kjeff8244@gmail.com</p><p>📍 Nairobi, Kenya</p></div>
   </div>
-  <div class="footer-bottom"><p>© 2025 Samuria Travels 🇰🇪</p><p>Built by Pluto</p></div>
+  <div class="footer-bottom"><p>© 2026 Samuria Travels 🇰🇪</p><p>Built by Pluto</p></div>
 </footer>
 
-<a href="https://wa.me/254700000000" class="wa-float" target="_blank">💬</a>
+<a href="https://wa.me/254702063163" class="wa-float" target="_blank">💬</a>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="assets/shared.js"></script>
 <script>
 // ── State ──
@@ -485,7 +485,7 @@ document.getElementById('sendWhatsApp').addEventListener('click', e => {
   e.preventDefault();
   const d = bookingData;
   const msg = `Hello Samuria Travels! 👋\n\nI'd like to book a trip:\n\n*Tour:* ${d.tour}\n*Date:* ${d.date || 'Flexible'}\n*Group Size:* ${d.group || 'TBC'}\n*Budget:* ${d.budget || 'TBC'}\n*Name:* ${d.name}\n*Email:* ${d.email}\n*Nationality:* ${d.nationality || 'N/A'}\n\n*Notes:* ${d.interests || 'None'}\n\nPlease send me a quote. Thank you!`;
-  const url = `https://wa.me/254700000000?text=${encodeURIComponent(msg)}`;
+  const url = `https://wa.me/254702063163?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
   showSuccess();
 });
@@ -538,4 +538,11 @@ const params = new URLSearchParams(window.location.search);
 const preselect = params.get('tour');
 if (preselect) {
   document.querySelectorAll('.tp-card').forEach(c => {
- 
+    if (c.dataset.tour.toLowerCase().includes(preselect.toLowerCase().split('-')[0])) {
+      c.click();
+    }
+  });
+}
+</script>
+</body>
+</html>

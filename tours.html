@@ -618,10 +618,10 @@
     <div class="footer-col"><h4>Services</h4><a href="tours.html">Safari Packages</a><a href="tours.html">Sea Excursions</a><a href="tours.html">City Tours</a><a href="tours.html">Transfers</a></div>
     <div class="footer-col"><h4>Contact</h4><p>📞 0702063163</p><p>✉️ kjeff8244@gmail.com</p><p>📍 Nairobi, Kenya</p></div>
   </div>
-  <div class="footer-bottom"><p>© 2025 Samuria Travels · Your Gateway to Kenya 🇰🇪</p><p>New & Growing · Built on Passion</p><p>Built by Pluto</p></div>
+  <div class="footer-bottom"><p>© 2026 Samuria Travels · Your Gateway to Kenya 🇰🇪</p><p>New & Growing · Built on Passion</p><p>Built by Pluto</p></div>
 </footer>
 
-<a href="https://wa.me/254700000000" class="wa-float" target="_blank" rel="noopener">💬</a>
+<a href="https://wa.me/254702063163" class="wa-float" target="_blank" rel="noopener">💬</a>
 <script src="assets/shared.js"></script>
 <script>
 // Tabs
@@ -825,10 +825,11 @@ function initTourCardExpand() {
     // Create details wrapper
     const details = document.createElement('div');
     details.className = 'tour-details';
+    const firstMedia = idx === 0 ? `<div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview"><img src="assets/maasai mara.png" alt="Maasai Mara"></div>` : `<div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 0) % MEDIA_EMOJI.length]}"></div>`;
     details.innerHTML = `
       <div class="tour-details-inner">
         <div class="tour-media">
-          <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 0) % MEDIA_EMOJI.length]}"></div>
+          ${firstMedia}
           <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 1) % MEDIA_EMOJI.length]}"></div>
           <div class="tour-media-tile" tabindex="0" role="button" aria-label="Open image preview" data-emo="${MEDIA_EMOJI[(idx + 2) % MEDIA_EMOJI.length]}"></div>
         </div>
