@@ -133,3 +133,7 @@ In `tours.html`, each tour card contains:
 
 The lightbox will automatically show the full image.
 
+---
+
+Built by Pluto
+
